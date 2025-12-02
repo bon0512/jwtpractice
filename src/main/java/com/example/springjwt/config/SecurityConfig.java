@@ -54,7 +54,7 @@ public class SecurityConfig {
         //http basic 인증 방식 disable
         http.httpBasic((auth) -> auth.disable());
 
-        http.cors((cors) -> cors
+        /*http.cors((cors) -> cors
                 .configurationSource(new CorsConfigurationSource() {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
@@ -77,7 +77,7 @@ public class SecurityConfig {
                         return configuration;
                     }
                 }));
-
+*/
 
         //경로별 인가 작업
         http.authorizeHttpRequests((auth) -> auth

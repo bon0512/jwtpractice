@@ -25,10 +25,8 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        //request Authorization ?¤ë”ë¥?ì°¾ìŒ
         String authorization = request.getHeader("Authorization");
 
-        //?¤ë”ê°?ê²€ì¦?
         if(authorization==null || !authorization.startsWith("Bearer ")){
             System.out.println("token null");
             filterChain.doFilter(request,response);
@@ -48,7 +46,6 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
 
-        //? í°?ì„œ username ê³?role ?ë“
         String username = jwtUtil.getUsername(token);
         String role = jwtUtil.getRole(token);
 
@@ -58,12 +55,10 @@ public class JWTFilter extends OncePerRequestFilter {
         user.setPassword("temppasword");
 
 
-        //?¤í”„ë§??œíë¦¬í‹° ?¸ì¦ ? í° ?ì„±
         CustomUserDetails customUserDetails = new CustomUserDetails(user);
         Authentication authenticationToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
 
 
-        //?¸ì…˜???¬ìš©???±ë¡
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         filterChain.doFilter(request,response);

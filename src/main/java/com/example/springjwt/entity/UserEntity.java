@@ -1,16 +1,18 @@
 package com.example.springjwt.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@Table(name = "user")
 public class UserEntity {
 
     @Id
@@ -22,4 +24,16 @@ public class UserEntity {
     private String password;
 
     private String role;
+
+    private String name;
+
+    private String provider;
+
+    private String providerId;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

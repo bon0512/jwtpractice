@@ -88,6 +88,7 @@ public class SecurityConfig {
                         "/swagger-ui/**",
                         "/swagger-ui.html"
                 ).permitAll()
+                .requestMatchers("/reissue").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated());
 

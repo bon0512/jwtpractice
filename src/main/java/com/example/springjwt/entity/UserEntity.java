@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@Table(name = "user")
 public class UserEntity {
 
     @Id
@@ -25,11 +24,11 @@ public class UserEntity {
 
     private String role;
 
-    private String name;
+    //private String name;
 
-    private String provider;
+    //private String provider;
 
-    private String providerId;
+    //private String providerId;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

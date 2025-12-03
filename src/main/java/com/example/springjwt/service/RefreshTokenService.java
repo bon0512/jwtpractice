@@ -1,6 +1,6 @@
 package com.example.springjwt.service;
 
-import com.example.springjwt.entity.RefreshToken;
+import com.example.springjwt.entity.RefreshTokenEntity;
 import com.example.springjwt.repository.RefreshTokenRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,11 +14,13 @@ public class RefreshTokenService {
     }
 
 
-    public void saveRefreshToken(Long userId, String token, Long expiry){
-        refreshTokenRepository.deleteByUserId(userId);
+    public void saveRefreshToken(String username, String token, Long expiry){
 
-        RefreshToken refreshToken = RefreshToken.builder()
-                .userId(userId)
+        // 기존 유저의 refresh 삭제 (Rotation)
+        refreshTokenRepository.deleteByUsername(username);
+
+        RefreshTokenEntity refreshToken = RefreshTokenEntity.builder()
+                .username(username)
                 .token(token)
                 .expiry(expiry)
                 .build();
@@ -26,16 +28,17 @@ public class RefreshTokenService {
         refreshTokenRepository.save(refreshToken);
     }
 
-    public RefreshToken getByUserId(Long userId){
-        return refreshTokenRepository.findByUserId(userId)
+    public RefreshTokenEntity getByUsername(String username){
+        return refreshTokenRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("can't find RefreshToken"));
     }
 
-    public RefreshToken getByToken(String token){
-        return refreshTokenRepository.findByToken(token).orElseThrow();
+    public RefreshTokenEntity getByToken(String token){
+        return refreshTokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("can't find RefreshToken"));
     }
 
-    public void deleteUserToken(Long userId){
-        refreshTokenRepository.deleteByUserId(userId);
+    public void deleteUserToken(String username){
+        refreshTokenRepository.deleteByUsername(username);
     }
 }

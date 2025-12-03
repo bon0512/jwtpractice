@@ -21,7 +21,7 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;          // User FK X, 숫자로만 저장
+    private Long username;          // User FK X, 숫자로만 저장
 
     @Column(nullable = false, length = 512)
     private String token;

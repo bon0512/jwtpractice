@@ -1,10 +1,11 @@
 package com.example.springjwt.config;
 
 
+import com.example.springjwt.jwt.CustomLogoutFilter;
 import com.example.springjwt.jwt.JWTFilter;
 import com.example.springjwt.jwt.JWTUtil;
 import com.example.springjwt.jwt.LoginFilter;
-import com.example.springjwt.repository.RefreshTokenRepository;
+import com.example.springjwt.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -28,12 +30,12 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshTokenService refreshTokenService) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
-        this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Bean
@@ -56,6 +58,7 @@ public class SecurityConfig {
 
         //http basic 인증 방식 disable
         http.httpBasic((auth) -> auth.disable());
+
 
         /*http.cors((cors) -> cors
                 .configurationSource(new CorsConfigurationSource() {
@@ -84,7 +87,7 @@ public class SecurityConfig {
 
         //경로별 인가 작업
         http.authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/login", "/", "/join").permitAll()
+                .requestMatchers("/api/auth/login", "/", "/join").permitAll()
                 .requestMatchers("/admin").hasRole("ADMIN")
                 .requestMatchers(
                         "/v3/api-docs/**",
@@ -95,9 +98,12 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated());
 
-        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
-        http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenRepository), UsernamePasswordAuthenticationFilter.class);
+        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenService);
+        loginFilter.setFilterProcessesUrl("/api/auth/login");
 
+        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+        http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new CustomLogoutFilter(refreshTokenService, "/api/auth/logout"), LogoutFilter.class);
 
         //세션 설정
         http.sessionManagement((session) -> session

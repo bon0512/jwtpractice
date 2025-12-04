@@ -1,8 +1,7 @@
 package com.example.springjwt.jwt;
 
-import com.example.springjwt.dto.CustomUserDetails;
-import com.example.springjwt.entity.RefreshTokenEntity;
-import com.example.springjwt.repository.RefreshTokenRepository;
+import com.example.springjwt.entity.Role;
+import com.example.springjwt.service.RefreshTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,23 +14,19 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import javax.xml.crypto.Data;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
-
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final RefreshTokenService refreshTokenService;
 
-    private final RefreshTokenRepository refreshTokenRepository;
-
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenService refreshTokenService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Override
@@ -39,8 +34,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String username = obtainUsername(request);
         String password = obtainPassword(request);
-
-        System.out.println(username);
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password, null);
 
@@ -52,20 +45,18 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String username = authentication.getName();
 
-
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
-        String role = auth.getAuthority();
+        Role role = Role.valueOf(auth.getAuthority());
 
-        //토큰 생성
-        String access = jwtUtil.createJwt("access", username, role, 10 * 60 * 1000L); // 10분
-        String refresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
+        String access = jwtUtil.createJwt("access", username, role.name(), 10 * 60 * 1000L); // 10분
+        String refresh = refreshTokenService.createRefreshToken(username, role);
 
+        refreshTokenService.saveRefreshToken(username, refresh);
 
-
-        response.setHeader("access",access);
-        response.addCookie(createCookie("refresh",refresh));
+        response.setHeader("access", access);
+        response.addCookie(createCookie("refresh", refresh));
         response.setStatus(HttpStatus.OK.value());
     }
 
@@ -74,29 +65,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request,
                                               HttpServletResponse response,
                                               AuthenticationException failed) {
-
-
         response.setStatus(401);
     }
 
-    private Cookie createCookie(String key, String value){
+    private Cookie createCookie(String key, String value) {
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
+        cookie.setMaxAge(refreshTokenService.getRefreshExpirySeconds());
         cookie.setHttpOnly(true);
-
+        cookie.setPath("/");
         return cookie;
     }
-
-    private void addRefreshEntity(String username, String refresh, Long expiredMs) {
-
-        Long expiry = System.currentTimeMillis() + expiredMs;
-
-        RefreshTokenEntity refreshEntity = new RefreshTokenEntity();
-        refreshEntity.setUsername(username);
-        refreshEntity.setToken(refresh);
-        refreshEntity.setExpiry(expiry);
-
-        refreshTokenRepository.save(refreshEntity);
-    }
-
 }

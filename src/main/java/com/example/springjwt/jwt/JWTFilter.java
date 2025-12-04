@@ -1,13 +1,13 @@
 package com.example.springjwt.jwt;
 
 import com.example.springjwt.dto.CustomUserDetails;
+import com.example.springjwt.entity.Role;
 import com.example.springjwt.entity.UserEntity;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.h2.engine.User;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -65,7 +65,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
 
         String username = jwtUtil.getUsername(accessToken);
-        String role = jwtUtil.getRole(accessToken);
+        Role role = Role.valueOf(jwtUtil.getRole(accessToken));
 
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(username);

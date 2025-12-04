@@ -22,13 +22,14 @@ public class UserEntity {
 
     private String password;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
-    //private String name;
+    private String name;
 
-    //private String provider;
+    private String provider;
 
-    //private String providerId;
+    private String providerId;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

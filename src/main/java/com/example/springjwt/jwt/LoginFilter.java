@@ -3,7 +3,6 @@ package com.example.springjwt.jwt;
 import com.example.springjwt.entity.Role;
 import com.example.springjwt.service.RefreshTokenService;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -50,13 +49,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
         Role role = Role.valueOf(auth.getAuthority());
 
-        String access = jwtUtil.createJwt("access", username, role.name(), 10 * 60 * 1000L); // 10분
+        String access = jwtUtil.createJwt("access", username, role.name(), 10 * 60 * 1000L); // 10 minutes
         String refresh = refreshTokenService.createRefreshToken(username, role);
 
         refreshTokenService.saveRefreshToken(username, refresh);
 
         response.setHeader("access", access);
-        response.addCookie(createCookie("refresh", refresh));
+        response.addCookie(refreshTokenService.createRefreshCookie(refresh));
         response.setStatus(HttpStatus.OK.value());
     }
 
@@ -67,12 +66,5 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                                               AuthenticationException failed) {
         response.setStatus(401);
     }
-
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(refreshTokenService.getRefreshExpirySeconds());
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        return cookie;
-    }
 }
+

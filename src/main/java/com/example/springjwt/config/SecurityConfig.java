@@ -98,9 +98,13 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated());
 
+
         LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenService);
         loginFilter.setFilterProcessesUrl("/api/auth/login");
 
+        /**
+         * 각 필터 등록
+         */
         http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(new CustomLogoutFilter(refreshTokenService, "/api/auth/logout"), LogoutFilter.class);

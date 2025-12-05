@@ -49,6 +49,16 @@ public class RefreshTokenService {
                 .orElseThrow(() -> new IllegalArgumentException("can't find RefreshToken"));
     }
 
+    // 리프레쉬토큰 쿠키 만들기
+    public Cookie createRefreshCookie(String value) {
+        Cookie cookie = new Cookie("refresh", value);
+        cookie.setMaxAge(getRefreshExpirySeconds());
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        // cookie.setSecure(true);
+        return cookie;
+    }
+
     public void deleteUserToken(String username) {
         refreshTokenRepository.deleteByUsername(username);
     }
@@ -57,6 +67,7 @@ public class RefreshTokenService {
         refreshTokenRepository.deleteByToken(token);
     }
 
+    // 쿠키에서 리프레시토큰 찾기
     public String extractRefreshToken(Cookie[] cookies) {
         if (cookies == null) {
             return null;
@@ -70,6 +81,7 @@ public class RefreshTokenService {
         return null;
     }
 
+    // 리프레시토큰 재발급을 위한 검증
     public void validateRefresh(String refreshToken) {
 
         if (refreshToken == null) {

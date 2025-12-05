@@ -1,17 +1,20 @@
 package com.example.springjwt.entity;
 
 
+import com.example.springjwt.dto.UserRequestDTO;
 import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserEntity {
 
     @Id
@@ -36,4 +39,7 @@ public class UserEntity {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+
+
 }
